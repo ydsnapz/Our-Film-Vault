@@ -1,0 +1,1213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Our Film Vault</title>
+
+  <style>
+    :root{
+      --bg:#0b0b0f;
+      --panel:#121218;
+      --text:#f5f5f7;
+      --muted:#b6b6c2;
+      --accent:#e50914;
+      --shadow: 0 20px 60px rgba(0,0,0,.55);
+      --radius: 16px;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background:
+        radial-gradient(1200px 600px at 20% -10%, rgba(229,9,20,.25), transparent 60%),
+        linear-gradient(180deg, #06060a 0%, var(--bg) 35%);
+      color:var(--text);
+      overflow-x:hidden;
+    }
+
+    /* Netflix-y vignette + grain */
+    .vignette{
+      position:fixed; inset:0; pointer-events:none; z-index:1;
+      background:
+        radial-gradient(1200px 700px at 50% 10%, rgba(0,0,0,.35), transparent 60%),
+        radial-gradient(900px 700px at 20% 80%, rgba(0,0,0,.45), transparent 62%),
+        radial-gradient(900px 700px at 80% 80%, rgba(0,0,0,.45), transparent 62%),
+        linear-gradient(180deg, rgba(0,0,0,.28), transparent 30%, rgba(0,0,0,.45));
+      mix-blend-mode: multiply;
+    }
+    .grain{
+      position:fixed; inset:-20%; pointer-events:none; z-index:2;
+      opacity:.08;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.9'/%3E%3C/svg%3E");
+      transform: translateZ(0);
+      animation: grainMove 7s steps(10) infinite;
+    }
+    @keyframes grainMove{
+      0%{transform:translate(0,0)}
+      10%{transform:translate(-2%, -3%)}
+      20%{transform:translate(-4%, 2%)}
+      30%{transform:translate(2%, -4%)}
+      40%{transform:translate(-1%, 3%)}
+      50%{transform:translate(-3%, 1%)}
+      60%{transform:translate(4%, 0%)}
+      70%{transform:translate(0%, 4%)}
+      80%{transform:translate(-4%, -1%)}
+      90%{transform:translate(2%, 3%)}
+      100%{transform:translate(0,0)}
+    }
+
+    header{
+      position:sticky; top:0; z-index:10;
+      backdrop-filter: blur(10px);
+      background: rgba(10,10,14,.65);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      padding: 14px 18px;
+      display:flex; align-items:center; gap:12px;
+    }
+    .logo{
+      display:flex; align-items:center; gap:10px;
+      font-weight:800; letter-spacing:.3px;
+    }
+    .logo .dot{width:10px;height:10px;border-radius:999px;background:var(--accent); box-shadow:0 0 20px rgba(229,9,20,.6)}
+    .spacer{flex:1}
+
+    .pill{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color:var(--text);
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:13px;
+      display:flex; align-items:center; gap:10px;
+    }
+    .pill button{
+      border:0;
+      background: rgba(255,255,255,.10);
+      color:var(--text);
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:800;
+      cursor:pointer;
+      transition: transform .15s var(--ease), background .15s var(--ease);
+    }
+    .pill button:hover{transform: translateY(-1px); background: rgba(255,255,255,.14)}
+
+    .hero{
+      position:relative;
+      z-index:5;
+      padding: 26px 18px 10px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .heroCard{
+      position:relative;
+      border-radius: var(--radius);
+      overflow:hidden;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,.08);
+      min-height: 340px;
+      display:flex;
+      align-items:flex-end;
+      cursor:pointer;
+      outline:none;
+    }
+    .heroCard:focus{box-shadow: 0 0 0 3px rgba(229,9,20,.35), var(--shadow)}
+    .heroCard img{
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      object-fit:cover;
+      filter: saturate(1.1) contrast(1.05);
+      transform: scale(1.02);
+    }
+    .heroShade{
+      position:absolute; inset:0;
+      background: linear-gradient(90deg, rgba(0,0,0,.78), rgba(0,0,0,.18), rgba(0,0,0,0));
+    }
+    .heroBottom{
+      position:absolute; left:0; right:0; bottom:0; height:65%;
+      background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.82));
+      pointer-events:none;
+    }
+    .heroOverlay{
+      position:relative;
+      padding: 22px;
+      width:100%;
+    }
+    .heroTitle{font-size:30px; font-weight:900; margin:0 0 6px; letter-spacing:.2px}
+    .heroMeta{color:rgba(245,245,247,.78); font-size:13px; margin:0 0 12px}
+    .chips{display:flex; flex-wrap:wrap; gap:8px; margin: 0 0 14px}
+    .chip{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(245,245,247,.9);
+    }
+    .btnRow{display:flex; gap:10px; flex-wrap:wrap}
+    .btn{
+      cursor:pointer;
+      border:0;
+      padding:10px 14px;
+      border-radius: 12px;
+      font-weight:800;
+      font-size:14px;
+      display:inline-flex; align-items:center; gap:10px;
+      transition: transform .16s var(--ease), filter .16s var(--ease);
+    }
+    .btn:hover{transform: translateY(-1px)}
+    .btnPrimary{background: var(--accent); color:white}
+    .btnGhost{
+      background: rgba(255,255,255,.10);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,.14);
+    }
+
+    main{
+      position:relative;
+      z-index:5;
+      max-width:1200px;
+      margin:0 auto;
+      padding: 6px 18px 80px
+    }
+    .rowHeader{
+      display:flex; align-items:flex-end; justify-content:space-between;
+      margin: 22px 2px 10px;
+    }
+    .rowHeader h2{margin:0; font-size:16px; letter-spacing:.2px}
+    .rowHeader span{color:var(--muted); font-size:12px}
+
+    .rail{
+      display:flex; gap:12px;
+      overflow-x:auto;
+      padding: 6px 2px 14px;
+      scroll-snap-type: x mandatory;
+    }
+    .rail::-webkit-scrollbar{height:10px}
+    .rail::-webkit-scrollbar-thumb{background: rgba(255,255,255,.14); border-radius:999px}
+
+    /* TILE */
+    .tile{
+      position:relative;
+      flex: 0 0 auto;
+      width: 220px;
+      aspect-ratio: 16 / 9;
+      border-radius: 14px;
+      overflow:hidden;
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,.08);
+      scroll-snap-align: start;
+      cursor:pointer;
+      transition: transform .18s var(--ease), box-shadow .18s var(--ease), border-color .18s var(--ease);
+      outline:none;
+      z-index:0;
+    }
+    .tile:focus{
+      box-shadow: 0 0 0 3px rgba(229,9,20,.35), 0 16px 50px rgba(0,0,0,.55);
+      border-color: rgba(255,255,255,.22);
+    }
+
+    /* hover-expand card feel */
+    .tile.is-hovered{
+      transform: translateY(-6px) scale(1.12);
+      box-shadow: 0 16px 50px rgba(0,0,0,.60);
+      border-color: rgba(255,255,255,.22);
+      z-index:50;
+    }
+
+    .tile img{
+      width:100%; height:100%;
+      object-fit:cover;
+    }
+
+    /* hover preview layer */
+    .tile .preview {
+      position: absolute;
+      inset: 0;
+      display: none;
+      background: black;
+    }
+    .tile.is-previewing .preview { display:block; }
+    .tile .preview iframe{ width:100%; height:100%; border:0; }
+
+    /* label */
+    .tileLabel{
+      position:absolute; left:10px; right:10px; bottom:10px;
+      background: linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,.80));
+      padding: 26px 8px 8px;
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 900;
+      text-shadow: 0 6px 18px rgba(0,0,0,.8);
+      z-index:3;
+      pointer-events:none;
+    }
+    .tileLabel small{
+      display:block;
+      font-weight:700;
+      color: rgba(245,245,247,.78);
+      margin-top:3px;
+      font-size: 11px;
+    }
+
+    /* metadata chips on tile */
+    .tileChips{
+      position:absolute;
+      top:10px; left:10px;
+      display:flex; gap:6px; flex-wrap:wrap;
+      z-index:4;
+      pointer-events:none;
+    }
+    .tileChip{
+      font-size:10px;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.30);
+      color: rgba(245,245,247,.92);
+      backdrop-filter: blur(6px);
+    }
+
+    /* progress bar */
+    .progressTrack{
+      position:absolute;
+      left:10px; right:10px; bottom:10px;
+      height:4px;
+      border-radius:999px;
+      background: rgba(255,255,255,.18);
+      overflow:hidden;
+      z-index:4;
+      display:none;
+    }
+    .progressFill{
+      height:100%;
+      width:0%;
+      border-radius:999px;
+      background: rgba(229,9,20,.95);
+    }
+
+    /* hover actions (Play / My List / Info) */
+    .actions{
+      position:absolute; left:10px; right:10px; bottom:14px;
+      display:flex; gap:8px; align-items:center;
+      opacity:0;
+      transform: translateY(8px);
+      transition: opacity .18s var(--ease), transform .18s var(--ease);
+      z-index:5;
+    }
+    .tile.is-hovered .actions{
+      opacity:1;
+      transform: translateY(0px);
+    }
+    .iconBtn{
+      border:0;
+      cursor:pointer;
+      font-weight:900;
+      color: var(--text);
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display:inline-flex; align-items:center; gap:8px;
+      transition: transform .16s var(--ease), background .16s var(--ease);
+    }
+    .iconBtn:hover{transform: translateY(-1px); background: rgba(255,255,255,.16)}
+    .iconBtn.primary{background: var(--accent); border-color: rgba(229,9,20,.6)}
+    .iconBtn.primary:hover{filter: brightness(1.04)}
+    .iconBtn.small{padding: 10px 10px}
+    .iconBtn .tiny{font-size:12px; font-weight:900; opacity:.9}
+
+    /* Modal */
+    .modalBackdrop{
+      position:fixed; inset:0; z-index:80;
+      background: rgba(0,0,0,.72);
+      display:none;
+      align-items:center; justify-content:center;
+      padding: 18px;
+    }
+    .modal{
+      width:min(980px, 100%);
+      border-radius: 18px;
+      overflow:hidden;
+      background: #0b0b10;
+      border: 1px solid rgba(255,255,255,.12);
+      box-shadow: var(--shadow);
+    }
+    .modalTop{
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 12px 14px;
+      background: rgba(255,255,255,.04);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      gap:12px;
+    }
+    .modalTitle{font-weight:900; font-size:14px}
+    .modalTopRight{display:flex; align-items:center; gap:10px}
+    .closeBtn{
+      cursor:pointer;
+      border:0;
+      background: rgba(255,255,255,.10);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius: 12px;
+      font-weight:900;
+    }
+    .player{
+      width:100%;
+      aspect-ratio:16/9;
+      background:black;
+    }
+    .modalBody{
+      padding: 12px 14px 16px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      align-items:flex-start;
+    }
+    .modalMeta{
+      display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+    }
+
+    /* Gate / Profiles */
+    .gate{
+      position:fixed; inset:0; z-index:100;
+      display:flex; align-items:center; justify-content:center;
+      background:
+        radial-gradient(1200px 600px at 20% -10%, rgba(229,9,20,.25), transparent 60%),
+        linear-gradient(180deg, #06060a 0%, var(--bg) 45%);
+      padding:18px;
+    }
+    .gateCard{
+      width:min(680px, 100%);
+      border-radius: 22px;
+      padding: 18px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: var(--shadow);
+    }
+    .gateTop{display:flex; align-items:center; justify-content:space-between; gap:12px}
+    .gateCard h1{margin:10px 0 6px; font-size:22px}
+    .gateCard p{margin:0 0 14px; color:var(--muted)}
+    .profiles{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap:10px;
+      margin: 10px 0 14px;
+    }
+    .profileBtn{
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.25);
+      border-radius: 18px;
+      padding: 12px;
+      cursor:pointer;
+      transition: transform .16s var(--ease), background .16s var(--ease), border-color .16s var(--ease);
+      display:flex; gap:12px; align-items:center;
+    }
+    .profileBtn:hover{transform: translateY(-1px); background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.20)}
+    .avatar{
+      width:44px; height:44px; border-radius:14px;
+      display:grid; place-items:center;
+      font-weight:900;
+      background: rgba(229,9,20,.20);
+      border:1px solid rgba(229,9,20,.35);
+      color: rgba(245,245,247,.95);
+    }
+    .profileBtn .name{font-weight:900}
+    .profileBtn .sub{font-size:12px; color:rgba(245,245,247,.70)}
+    .gateRow{display:flex; gap:10px; flex-wrap:wrap}
+    .gateRow input{
+      flex:1;
+      min-width: 180px;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.35);
+      color: var(--text);
+      font-size: 14px;
+      outline:none;
+    }
+    .gateRow button{
+      padding: 12px 14px;
+      border-radius: 14px;
+      border:0;
+      background: var(--accent);
+      color:white;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .hint{margin-top:10px; font-size:12px; color:rgba(245,245,247,.55)}
+    .err{margin-top:10px; font-size:13px; color:#ffb4b4; display:none}
+    @media (max-width: 700px){
+      .profiles{grid-template-columns: 1fr}
+      .tile{width: 180px}
+      .heroTitle{font-size:24px}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="vignette"></div>
+  <div class="grain"></div>
+
+  <!-- PROFILES + PIN GATE -->
+  <div class="gate" id="gate">
+    <div class="gateCard">
+      <div class="gateTop">
+        <div class="logo"><span class="dot"></span> Our Film Vault</div>
+        <div class="chip" id="gateStatus">Choose profile</div>
+      </div>
+
+      <h1>Private screening room</h1>
+      <p>Pick who’s watching, then enter the code.</p>
+
+      <div class="profiles" id="profiles"></div>
+
+      <div class="gateRow">
+        <input id="pin" type="password" placeholder="Code" autocomplete="off" />
+        <button id="enterBtn">Enter</button>
+      </div>
+
+      <div class="err" id="gateErr">Wrong code (or no profile selected). Try again.</div>
+      <div class="hint">Tip: change the PIN + names in the script. Progress/My List are saved per profile.</div>
+    </div>
+  </div>
+
+  <header>
+    <div class="logo"><span class="dot"></span> Our Film Vault</div>
+    <div class="spacer"></div>
+
+    <div class="pill" title="Sound toggle affects UI click/hover sounds (videos stay muted in preview)">
+      <span id="watchingAs">Watching as: —</span>
+      <button id="soundBtn" type="button">Sound: Off</button>
+    </div>
+
+    <div class="pill">
+      <span id="countPill">0 videos</span>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="heroCard" id="heroCard" role="button" tabindex="0">
+      <img id="heroImg" alt="Featured thumbnail" />
+      <div class="heroShade"></div>
+      <div class="heroBottom"></div>
+      <div class="heroOverlay">
+        <div class="chips" id="heroChips"></div>
+        <h1 class="heroTitle" id="heroTitle">Featured memory</h1>
+        <p class="heroMeta" id="heroMeta">Some moments deserve to be watched again.</p>
+        <div class="btnRow">
+          <button class="btn btnPrimary" id="playFeatured" type="button">▶ Play</button>
+          <button class="btn btnGhost" id="randomBtn" type="button">🎲 Random</button>
+          <button class="btn btnGhost" id="addFeatured" type="button">❤️ My List</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main id="rows"></main>
+
+  <!-- MODAL -->
+  <div class="modalBackdrop" id="backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modalTop">
+        <div>
+          <div class="modalTitle" id="modalTitle">Title</div>
+          <div class="modalMeta" id="modalChips"></div>
+        </div>
+        <div class="modalTopRight">
+          <button class="closeBtn" id="closeBtn" type="button">✕</button>
+        </div>
+      </div>
+      <div class="player" id="player"></div>
+      <div class="modalBody">
+        <div id="modalBodyText"></div>
+        <div class="modalMeta" id="modalActions"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- YouTube Iframe API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+
+  <script>
+    // =======================
+    // EDIT THESE
+    // =======================
+    const PIN_CODE = "0311"; // change this
+    const PROFILES = [
+      { id: "delia", name: "Delia", tag: "❤️", color: "rgba(229,9,20,.22)" },
+      { id: "yuder", name: "Yuder", tag: "🎬", color: "rgba(255,255,255,.10)" },
+      { id: "guest", name: "Guest", tag: "✨", color: "rgba(255,255,255,.10)" },
+    ];
+
+    // Put your videos here:
+    // youtubeId = the part after v= in your URL
+    // thumb = https://i.ytimg.com/vi/VIDEO_ID/hqdefault.jpg
+    const BASE_CATEGORIES = [
+      {
+        title: "Recently Added",
+        subtitle: "Newest edits",
+        videos: [
+          {
+            title: "Memory Title",
+            date: "Feb 2026",
+            note: "Add a little caption here.",
+            youtubeId: "VIDEO_ID_HERE",
+            thumb: "https://i.ytimg.com/vi/VIDEO_ID_HERE/hqdefault.jpg",
+            tags: ["HD", "Unlisted", "Love"]
+          },
+          {
+            title: "Another Memory",
+            date: "Jan 2026",
+            note: "Little note.",
+            youtubeId: "VIDEO_ID_HERE_2",
+            thumb: "https://i.ytimg.com/vi/VIDEO_ID_HERE_2/hqdefault.jpg",
+            tags: ["HD", "Unlisted"]
+          }
+        ]
+      },
+      {
+        title: "Trips",
+        subtitle: "The big chapters",
+        videos: [
+          {
+            title: "Weekend Away",
+            date: "2025",
+            note: "What you want her to feel.",
+            youtubeId: "VIDEO_ID_HERE_3",
+            thumb: "https://i.ytimg.com/vi/VIDEO_ID_HERE_3/hqdefault.jpg",
+            tags: ["HD", "Trip"]
+          }
+        ]
+      }
+    ];
+    // =======================
+
+    // -----------------------
+    // State
+    // -----------------------
+    let activeProfile = localStorage.getItem("vault_profile") || "";
+    let soundOn = (localStorage.getItem("vault_sound") || "off") === "on";
+
+    let ytPlayer = null;
+    let currentVideo = null;
+
+    let hoverPreviewTimer = null;
+    let heroRotateTimer = null;
+
+    // -----------------------
+    // Tiny sound design (UI only)
+    // -----------------------
+    let audioCtx = null;
+    function ensureAudio(){
+      if(!audioCtx){
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+    function uiClick(){
+      if(!soundOn) return;
+      ensureAudio();
+      const t = audioCtx.currentTime;
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = "triangle";
+      o.frequency.setValueAtTime(420, t);
+      o.frequency.exponentialRampToValueAtTime(240, t + 0.06);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.08, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.08);
+      o.connect(g).connect(audioCtx.destination);
+      o.start(t);
+      o.stop(t + 0.09);
+    }
+    function uiWhoosh(){
+      if(!soundOn) return;
+      ensureAudio();
+      const t = audioCtx.currentTime;
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = "sawtooth";
+      o.frequency.setValueAtTime(90, t);
+      o.frequency.exponentialRampToValueAtTime(260, t + 0.14);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.04, t + 0.03);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+      o.connect(g).connect(audioCtx.destination);
+      o.start(t);
+      o.stop(t + 0.17);
+    }
+
+    // -----------------------
+    // Helpers: keys per profile
+    // -----------------------
+    function requireProfileKeyPrefix(){
+      return activeProfile ? `vault_${activeProfile}_` : "vault__";
+    }
+    function keyProgress(id){ return `${requireProfileKeyPrefix()}progress_${id}`; }
+    function keyFavs(){ return `${requireProfileKeyPrefix()}favorites`; }
+
+    function getFavoritesSet(){
+      const raw = localStorage.getItem(keyFavs()) || "[]";
+      try{ return new Set(JSON.parse(raw)); } catch { return new Set(); }
+    }
+    function setFavoritesSet(set){
+      localStorage.setItem(keyFavs(), JSON.stringify([...set]));
+    }
+    function isFav(id){
+      return getFavoritesSet().has(id);
+    }
+    function toggleFav(id){
+      const s = getFavoritesSet();
+      if(s.has(id)) s.delete(id); else s.add(id);
+      setFavoritesSet(s);
+      renderAllFavIcons();
+      rebuildAndRender(); // keeps "My List" row updated
+    }
+
+    // -----------------------
+    // Build dynamic categories: Continue Watching + My List + Base
+    // -----------------------
+    function buildFlat(baseCats){
+      return baseCats.flatMap(c => c.videos.map(v => ({...v, category:c.title})));
+    }
+
+    function getProgressPct(id){
+      return Number(localStorage.getItem(keyProgress(id)) || 0);
+    }
+
+    function getContinueWatching(flat){
+      return flat
+        .map(v => ({...v, _pct: getProgressPct(v.youtubeId)}))
+        .filter(v => v._pct > 0 && v._pct < 100)
+        .sort((a,b) => (b._pct - a._pct));
+    }
+
+    function getMyList(flat){
+      const favs = getFavoritesSet();
+      const list = flat.filter(v => favs.has(v.youtubeId));
+      // optional: sort by most progressed, then title
+      return list
+        .map(v => ({...v, _pct: getProgressPct(v.youtubeId)}))
+        .sort((a,b) => (b._pct - a._pct) || a.title.localeCompare(b.title));
+    }
+
+    function buildCategories(){
+      const base = JSON.parse(JSON.stringify(BASE_CATEGORIES));
+      const flat = buildFlat(base);
+
+      const cw = getContinueWatching(flat);
+      const ml = getMyList(flat);
+
+      const out = [];
+
+      if(cw.length){
+        out.push({ title:"Continue Watching", subtitle:"Pick up where you left off", videos:cw });
+      }
+      if(ml.length){
+        out.push({ title:"My List", subtitle:"Saved moments", videos:ml });
+      }
+      out.push(...base);
+
+      return { categories: out, flatAll: buildFlat(out), flatBase: flat };
+    }
+
+    // -----------------------
+    // Gate / Profiles
+    // -----------------------
+    function renderProfiles(){
+      const wrap = document.getElementById("profiles");
+      wrap.innerHTML = "";
+      PROFILES.forEach(p => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "profileBtn";
+        btn.innerHTML = `
+          <div class="avatar" style="background:${p.color}">${p.tag}</div>
+          <div>
+            <div class="name">${p.name}</div>
+            <div class="sub">Profile</div>
+          </div>
+        `;
+        btn.addEventListener("click", () => {
+          uiClick();
+          activeProfile = p.id;
+          localStorage.setItem("vault_profile", activeProfile);
+          document.getElementById("gateStatus").textContent = `Selected: ${p.name}`;
+          document.getElementById("watchingAs").textContent = `Watching as: ${p.name}`;
+          document.getElementById("pin").focus();
+        });
+        wrap.appendChild(btn);
+      });
+    }
+
+    function updateHeaderProfile(){
+      const p = PROFILES.find(x => x.id === activeProfile);
+      document.getElementById("watchingAs").textContent = `Watching as: ${p ? p.name : "—"}`;
+    }
+
+    function enterGate(){
+      uiClick();
+      const pin = document.getElementById("pin").value;
+      const err = document.getElementById("gateErr");
+      if(activeProfile && pin === PIN_CODE){
+        document.getElementById("gate").style.display = "none";
+        err.style.display = "none";
+        rebuildAndRender();
+        startHeroRotation();
+      } else {
+        err.style.display = "block";
+        document.getElementById("pin").value = "";
+        document.getElementById("pin").focus();
+      }
+    }
+
+    // -----------------------
+    // Rendering
+    // -----------------------
+    function makeChips(tags){
+      const safe = (tags || []).slice(0,4);
+      return safe.map(t => `<span class="tileChip">${t}</span>`).join("");
+    }
+
+    function renderRows(categories){
+      const rowsEl = document.getElementById("rows");
+      rowsEl.innerHTML = "";
+
+      categories.forEach((cat, rowIndex) => {
+        const wrap = document.createElement("section");
+
+        const header = document.createElement("div");
+        header.className = "rowHeader";
+        header.innerHTML = `<h2>${cat.title}</h2><span>${cat.subtitle || ""}</span>`;
+        wrap.appendChild(header);
+
+        const rail = document.createElement("div");
+        rail.className = "rail";
+        rail.dataset.rowIndex = String(rowIndex);
+
+        cat.videos.forEach((v, colIndex) => {
+          const tile = document.createElement("div");
+          tile.className = "tile";
+          tile.tabIndex = 0;
+          tile.dataset.youtubeId = v.youtubeId;
+          tile.dataset.rowIndex = String(rowIndex);
+          tile.dataset.colIndex = String(colIndex);
+
+          tile.innerHTML = `
+            <img src="${v.thumb}" alt="${v.title}">
+            <div class="preview" aria-hidden="true"></div>
+
+            <div class="tileChips">${makeChips(v.tags || ["HD","Unlisted"])}</div>
+
+            <div class="progressTrack" aria-hidden="true">
+              <div class="progressFill" style="width:0%"></div>
+            </div>
+
+            <div class="actions">
+              <button class="iconBtn primary" type="button" data-action="play">▶ <span class="tiny">Play</span></button>
+              <button class="iconBtn small" type="button" data-action="fav">${isFav(v.youtubeId) ? "💖" : "♡"}</button>
+              <button class="iconBtn small" type="button" data-action="info">ⓘ</button>
+            </div>
+
+            <div class="tileLabel">${v.title}<small>${v.date || ""}</small></div>
+          `;
+
+          // Clicks: tile opens info/play depending; buttons handle actions
+          tile.addEventListener("click", (e) => {
+            const act = e.target?.dataset?.action;
+            if(act === "play"){
+              uiClick();
+              openModal(v);
+              return;
+            }
+            if(act === "fav"){
+              uiClick();
+              toggleFav(v.youtubeId);
+              // update button icon immediately
+              e.target.textContent = isFav(v.youtubeId) ? "💖" : "♡";
+              return;
+            }
+            if(act === "info"){
+              uiClick();
+              openInfo(v);
+              return;
+            }
+            // clicking elsewhere = play (Netflix-like)
+            uiClick();
+            openModal(v);
+          });
+
+          // Keyboard: Enter plays, i opens info, f toggles favorite
+          tile.addEventListener("keydown", (e) => {
+            if(e.key === "Enter"){
+              uiClick(); openModal(v);
+            } else if(e.key.toLowerCase() === "i"){
+              uiClick(); openInfo(v);
+            } else if(e.key.toLowerCase() === "f"){
+              uiClick(); toggleFav(v.youtubeId);
+            }
+          });
+
+          // Hover expand + preview
+          tile.addEventListener("mouseenter", () => {
+            uiWhoosh();
+            tile.classList.add("is-hovered");
+            hoverPreviewTimer = setTimeout(() => {
+              const preview = tile.querySelector(".preview");
+              if(!preview || preview.childElementCount) return;
+              tile.classList.add("is-previewing");
+              const src =
+                `https://www.youtube.com/embed/${v.youtubeId}` +
+                `?autoplay=1&mute=1&controls=0&playsinline=1&rel=0&modestbranding=1` +
+                `&loop=1&playlist=${v.youtubeId}`;
+              preview.innerHTML = `<iframe src="${src}" allow="autoplay; encrypted-media"></iframe>`;
+            }, 280);
+          });
+
+          tile.addEventListener("mouseleave", () => {
+            clearTimeout(hoverPreviewTimer);
+            hoverPreviewTimer = null;
+            const preview = tile.querySelector(".preview");
+            if(preview) preview.innerHTML = "";
+            tile.classList.remove("is-previewing");
+            tile.classList.remove("is-hovered");
+          });
+
+          rail.appendChild(tile);
+        });
+
+        wrap.appendChild(rail);
+        rowsEl.appendChild(wrap);
+      });
+
+      renderAllProgressBars();
+      renderAllFavIcons();
+      installArrowKeyNav();
+    }
+
+    function renderAllProgressBars(){
+      const tiles = document.querySelectorAll(".tile[data-youtube-id]");
+      tiles.forEach(tile => {
+        const id = tile.dataset.youtubeId;
+        const pct = getProgressPct(id);
+        const fill = tile.querySelector(".progressFill");
+        const track = tile.querySelector(".progressTrack");
+        if(!fill || !track) return;
+
+        if(pct <= 0){
+          track.style.display = "none";
+          fill.style.width = "0%";
+          return;
+        }
+        track.style.display = "block";
+        fill.style.width = `${pct}%`;
+      });
+    }
+
+    function renderAllFavIcons(){
+      const tiles = document.querySelectorAll(".tile[data-youtube-id]");
+      tiles.forEach(tile => {
+        const id = tile.dataset.youtubeId;
+        const btn = tile.querySelector('[data-action="fav"]');
+        if(btn) btn.textContent = isFav(id) ? "💖" : "♡";
+      });
+      // hero button
+      if(currentHeroVideo){
+        document.getElementById("addFeatured").textContent = isFav(currentHeroVideo.youtubeId) ? "💖 In My List" : "❤️ My List";
+      }
+    }
+
+    // -----------------------
+    // Hero
+    // -----------------------
+    let currentHeroVideo = null;
+
+    function heroSet(v){
+      currentHeroVideo = v;
+      document.getElementById("heroImg").src = v.thumb;
+      document.getElementById("heroTitle").textContent = v.title;
+      document.getElementById("heroMeta").textContent =
+        `${v.date || ""} • ${v.category || "Featured"} — ${v.note || "Some moments deserve to be watched again."}`;
+
+      // chips
+      const chips = [];
+      if(v.category) chips.push(v.category);
+      if(v.tags && v.tags.length) chips.push(...v.tags.slice(0,3));
+      if(!chips.length) chips.push("HD","Unlisted");
+      document.getElementById("heroChips").innerHTML = chips.map(c => `<span class="chip">${c}</span>`).join("");
+
+      // button text
+      document.getElementById("addFeatured").textContent = isFav(v.youtubeId) ? "💖 In My List" : "❤️ My List";
+    }
+
+    function pickRandomHero(flat){
+      if(!flat.length) return null;
+      return flat[Math.floor(Math.random()*flat.length)];
+    }
+
+    function startHeroRotation(){
+      stopHeroRotation();
+      heroRotateTimer = setInterval(() => {
+        const { flatAll } = buildCategories();
+        const next = pickRandomHero(flatAll);
+        if(next) heroSet(next);
+      }, 20000);
+    }
+    function stopHeroRotation(){
+      if(heroRotateTimer){
+        clearInterval(heroRotateTimer);
+        heroRotateTimer = null;
+      }
+    }
+
+    // -----------------------
+    // Modal (YouTube API player)
+    // -----------------------
+    const backdrop = document.getElementById("backdrop");
+    const playerEl = document.getElementById("player");
+    const modalTitle = document.getElementById("modalTitle");
+    const modalBodyText = document.getElementById("modalBodyText");
+    const modalChips = document.getElementById("modalChips");
+    const modalActions = document.getElementById("modalActions");
+
+    function openInfo(v){
+      // Info modal without autoplay
+      openModal(v, { autoplay:false, infoOnly:true });
+    }
+
+    function openModal(v, opts = { autoplay:true, infoOnly:false }){
+      currentVideo = v;
+
+      modalTitle.textContent = v.title;
+      modalBodyText.textContent = v.note || "";
+      modalChips.innerHTML = [
+        v.date ? `<span class="chip">${v.date}</span>` : "",
+        v.category ? `<span class="chip">${v.category}</span>` : "",
+        ...(v.tags || ["HD","Unlisted"]).slice(0,4).map(t => `<span class="chip">${t}</span>`)
+      ].join("");
+
+      modalActions.innerHTML = `
+        <button class="iconBtn ${isFav(v.youtubeId) ? "" : ""}" type="button" id="modalFavBtn">
+          ${isFav(v.youtubeId) ? "💖 Saved" : "♡ Save to My List"}
+        </button>
+      `;
+      document.getElementById("modalFavBtn").addEventListener("click", () => {
+        uiClick();
+        toggleFav(v.youtubeId);
+        document.getElementById("modalFavBtn").innerHTML = isFav(v.youtubeId) ? "💖 Saved" : "♡ Save to My List";
+      });
+
+      backdrop.style.display = "flex";
+      backdrop.setAttribute("aria-hidden","false");
+
+      playerEl.innerHTML = `<div id="ytPlayer"></div>`;
+
+      // If API not ready yet, fallback to embed iframe (still works, but no progress tracking)
+      if(typeof YT === "undefined" || !YT.Player){
+        const src = `https://www.youtube.com/embed/${v.youtubeId}?rel=0&modestbranding=1&playsinline=1${opts.autoplay ? "&autoplay=1" : ""}`;
+        playerEl.innerHTML = `<iframe style="width:100%;height:100%;border:0" src="${src}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+        return;
+      }
+
+      // Create player
+      ytPlayer = new YT.Player("ytPlayer", {
+        videoId: v.youtubeId,
+        playerVars: {
+          rel: 0,
+          modestbranding: 1,
+          playsinline: 1,
+          autoplay: opts.autoplay ? 1 : 0
+        }
+      });
+    }
+
+    function saveProgress(){
+      if(!ytPlayer || !currentVideo) return;
+      try{
+        const t = ytPlayer.getCurrentTime?.() || 0;
+        const d = ytPlayer.getDuration?.() || 0;
+        if(d <= 0) return;
+
+        let pct = Math.min(98, Math.max(0, (t / d) * 100));
+        if(t > d - 5) pct = 100;
+
+        localStorage.setItem(keyProgress(currentVideo.youtubeId), String(pct));
+        renderAllProgressBars();
+      } catch(e){}
+    }
+
+    function closeModal(){
+      saveProgress();
+
+      backdrop.style.display = "none";
+      backdrop.setAttribute("aria-hidden","true");
+
+      try{
+        if(ytPlayer && ytPlayer.destroy) ytPlayer.destroy();
+      } catch(e){}
+      ytPlayer = null;
+      currentVideo = null;
+
+      playerEl.innerHTML = "";
+
+      // keep rows (Continue Watching) accurate after saving
+      rebuildAndRender({ keepHero:true });
+    }
+
+    document.getElementById("closeBtn").addEventListener("click", () => { uiClick(); closeModal(); });
+    backdrop.addEventListener("click", (e)=>{ if(e.target === backdrop){ uiClick(); closeModal(); } });
+    window.addEventListener("keydown", (e)=>{ if(e.key==="Escape" && backdrop.style.display==="flex"){ uiClick(); closeModal(); } });
+
+    // -----------------------
+    // Keyboard navigation (arrows across rails)
+    // -----------------------
+    function installArrowKeyNav(){
+      const tiles = document.querySelectorAll(".tile");
+      tiles.forEach(t => {
+        t.addEventListener("keydown", (e) => {
+          const key = e.key;
+          if(!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(key)) return;
+
+          e.preventDefault();
+          const row = Number(t.dataset.rowIndex);
+          const col = Number(t.dataset.colIndex);
+
+          const getTile = (r,c) => document.querySelector(`.tile[data-row-index="${r}"][data-col-index="${c}"]`);
+
+          let next = null;
+          if(key === "ArrowLeft") next = getTile(row, Math.max(0, col-1));
+          if(key === "ArrowRight") next = getTile(row, col+1) || t;
+          if(key === "ArrowUp"){
+            // move up same col, or closest smaller col
+            for(let rr = row-1; rr >= 0; rr--){
+              next = getTile(rr, col) || getTile(rr, Math.max(0, col-1)) || getTile(rr, 0);
+              if(next) break;
+            }
+          }
+          if(key === "ArrowDown"){
+            for(let rr = row+1; ; rr++){
+              next = getTile(rr, col) || getTile(rr, Math.max(0, col-1)) || getTile(rr, 0);
+              if(next) break;
+              // stop if no more rows
+              if(!document.querySelector(`.rail[data-row-index="${rr}"]`)) { next = t; break; }
+            }
+          }
+
+          if(next){
+            next.focus({ preventScroll:false });
+            // scroll rail so focused tile is visible
+            const rail = next.closest(".rail");
+            if(rail){
+              const rect = next.getBoundingClientRect();
+              const rrect = rail.getBoundingClientRect();
+              if(rect.left < rrect.left || rect.right > rrect.right){
+                next.scrollIntoView({ behavior:"smooth", inline:"center", block:"nearest" });
+              }
+            }
+          }
+        });
+      });
+    }
+
+    // -----------------------
+    // Rebuild + render everything
+    // -----------------------
+    function rebuildAndRender({ keepHero=false } = {}){
+      const { categories, flatAll, flatBase } = buildCategories();
+      document.getElementById("countPill").textContent = `${flatBase.length} videos`;
+
+      renderRows(categories);
+
+      // set hero
+      if(!keepHero || !currentHeroVideo){
+        const picked = pickRandomHero(flatAll);
+        if(picked) heroSet(picked);
+      } else {
+        // refresh hero button state
+        renderAllFavIcons();
+      }
+    }
+
+    // -----------------------
+    // Header buttons / hero buttons
+    // -----------------------
+    document.getElementById("playFeatured").addEventListener("click", (e) => {
+      e.stopPropagation();
+      if(!currentHeroVideo) return;
+      uiClick();
+      openModal(currentHeroVideo);
+    });
+    document.getElementById("randomBtn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      uiClick();
+      const { flatAll } = buildCategories();
+      const r = pickRandomHero(flatAll);
+      if(r) heroSet(r);
+    });
+    document.getElementById("addFeatured").addEventListener("click", (e) => {
+      e.stopPropagation();
+      if(!currentHeroVideo) return;
+      uiClick();
+      toggleFav(currentHeroVideo.youtubeId);
+      renderAllFavIcons();
+    });
+    document.getElementById("heroCard").addEventListener("click", () => {
+      if(!currentHeroVideo) return;
+      uiClick();
+      openModal(currentHeroVideo);
+    });
+    document.getElementById("heroCard").addEventListener("keydown", (e) => {
+      if(e.key === "Enter" && currentHeroVideo){
+        uiClick(); openModal(currentHeroVideo);
+      }
+    });
+
+    // Sound toggle
+    const soundBtn = document.getElementById("soundBtn");
+    function renderSoundBtn(){
+      soundBtn.textContent = `Sound: ${soundOn ? "On" : "Off"}`;
+    }
+    soundBtn.addEventListener("click", () => {
+      soundOn = !soundOn;
+      localStorage.setItem("vault_sound", soundOn ? "on" : "off");
+      renderSoundBtn();
+      uiClick();
+    });
+
+    // Gate events
+    document.getElementById("enterBtn").addEventListener("click", enterGate);
+    document.getElementById("pin").addEventListener("keydown", (e)=>{ if(e.key==="Enter") enterGate(); });
+
+    // YouTube API ready hook (required by iframe_api)
+    function onYouTubeIframeAPIReady(){
+      // no-op: we create players when needed
+    }
+    window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
+
+    // -----------------------
+    // Boot
+    // -----------------------
+    renderProfiles();
+    updateHeaderProfile();
+    renderSoundBtn();
+
+    // If profile already chosen previously, reflect in gate UI
+    if(activeProfile){
+      const p = PROFILES.find(x => x.id === activeProfile);
+      document.getElementById("gateStatus").textContent = `Selected: ${p ? p.name : activeProfile}`;
+      updateHeaderProfile();
+    }
+
+    // keep focus pleasant
+    document.getElementById("pin").focus();
+
+  </script>
+</body>
+</html>
