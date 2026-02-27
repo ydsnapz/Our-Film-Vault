@@ -16,17 +16,6 @@
       --radius: 16px;
       --ease: cubic-bezier(.2,.8,.2,1);
     }
-.gate,
-.gate * {
-  pointer-events: auto;
-}
-
-.profiles,
-.profileBtn {
-  position: relative;
-  z-index: 200;
-  pointer-events: auto;
-}
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
@@ -301,7 +290,7 @@
       background: rgba(229,9,20,.95);
     }
 
-    /* hover actions (Play / My List / Info) */
+    /* hover actions */
     .actions{
       position:absolute; left:10px; right:10px; bottom:14px;
       display:flex; gap:8px; align-items:center;
@@ -356,7 +345,6 @@
       gap:12px;
     }
     .modalTitle{font-weight:900; font-size:14px}
-    .modalTopRight{display:flex; align-items:center; gap:10px}
     .closeBtn{
       cursor:pointer;
       border:0;
@@ -386,77 +374,7 @@
       display:flex; gap:8px; flex-wrap:wrap; align-items:center;
     }
 
-    /* Gate / Profiles */
-    .gate{
-      position:fixed; inset:0; z-index:100;
-      display:flex; align-items:center; justify-content:center;
-      background:
-        radial-gradient(1200px 600px at 20% -10%, rgba(229,9,20,.25), transparent 60%),
-        linear-gradient(180deg, #06060a 0%, var(--bg) 45%);
-      padding:18px;
-    }
-    .gateCard{
-      width:min(680px, 100%);
-      border-radius: 22px;
-      padding: 18px;
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.10);
-      box-shadow: var(--shadow);
-    }
-    .gateTop{display:flex; align-items:center; justify-content:space-between; gap:12px}
-    .gateCard h1{margin:10px 0 6px; font-size:22px}
-    .gateCard p{margin:0 0 14px; color:var(--muted)}
-    .profiles{
-      display:grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap:10px;
-      margin: 10px 0 14px;
-    }
-    .profileBtn{
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(0,0,0,.25);
-      border-radius: 18px;
-      padding: 12px;
-      cursor:pointer;
-      transition: transform .16s var(--ease), background .16s var(--ease), border-color .16s var(--ease);
-      display:flex; gap:12px; align-items:center;
-    }
-    .profileBtn:hover{transform: translateY(-1px); background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.20)}
-    .avatar{
-      width:44px; height:44px; border-radius:14px;
-      display:grid; place-items:center;
-      font-weight:900;
-      background: rgba(229,9,20,.20);
-      border:1px solid rgba(229,9,20,.35);
-      color: rgba(245,245,247,.95);
-    }
-    .profileBtn .name{font-weight:900}
-    .profileBtn .sub{font-size:12px; color:rgba(245,245,247,.70)}
-    .gateRow{display:flex; gap:10px; flex-wrap:wrap}
-    .gateRow input{
-      flex:1;
-      min-width: 180px;
-      padding: 12px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.35);
-      color: var(--text);
-      font-size: 14px;
-      outline:none;
-    }
-    .gateRow button{
-      padding: 12px 14px;
-      border-radius: 14px;
-      border:0;
-      background: var(--accent);
-      color:white;
-      font-weight:900;
-      cursor:pointer;
-    }
-    .hint{margin-top:10px; font-size:12px; color:rgba(245,245,247,.55)}
-    .err{margin-top:10px; font-size:13px; color:#ffb4b4; display:none}
     @media (max-width: 700px){
-      .profiles{grid-template-columns: 1fr}
       .tile{width: 180px}
       .heroTitle{font-size:24px}
     }
@@ -467,35 +385,12 @@
   <div class="vignette"></div>
   <div class="grain"></div>
 
-  <!-- PROFILES + PIN GATE -->
-  <div class="gate" id="gate">
-    <div class="gateCard">
-      <div class="gateTop">
-        <div class="logo"><span class="dot"></span> Our Film Vault</div>
-        <div class="chip" id="gateStatus">Choose profile</div>
-      </div>
-
-      <h1>Private screening room</h1>
-      <p>Pick who’s watching, then enter the code.</p>
-
-      <div class="profiles" id="profiles"></div>
-
-      <div class="gateRow">
-        <input id="pin" type="password" placeholder="Code" autocomplete="off" />
-        <button id="enterBtn">Enter</button>
-      </div>
-
-      <div class="err" id="gateErr">Wrong code (or no profile selected). Try again.</div>
-      <div class="hint">Tip: change the PIN + names in the script. Progress/My List are saved per profile.</div>
-    </div>
-  </div>
-
   <header>
     <div class="logo"><span class="dot"></span> Our Film Vault</div>
     <div class="spacer"></div>
 
     <div class="pill" title="Sound toggle affects UI click/hover sounds (videos stay muted in preview)">
-      <span id="watchingAs">Watching as: —</span>
+      <span id="watchingAs">Watching as: Delia</span>
       <button id="soundBtn" type="button">Sound: Off</button>
     </div>
 
@@ -532,9 +427,7 @@
           <div class="modalTitle" id="modalTitle">Title</div>
           <div class="modalMeta" id="modalChips"></div>
         </div>
-        <div class="modalTopRight">
-          <button class="closeBtn" id="closeBtn" type="button">✕</button>
-        </div>
+        <button class="closeBtn" id="closeBtn" type="button">✕</button>
       </div>
       <div class="player" id="player"></div>
       <div class="modalBody">
@@ -551,87 +444,90 @@
     // =======================
     // EDIT THESE
     // =======================
-    const PIN_CODE = "1119"; // change this
-    const PROFILES = [
-      { id: "delia", name: "Delia", tag: "❤️", color: "rgba(229,9,20,.22)" },
-      { id: "yuder", name: "Yuder", tag: "🎬", color: "rgba(255,255,255,.10)" },
-      { id: "guest", name: "Guest", tag: "✨", color: "rgba(255,255,255,.10)" },
-    ];
+    const ACTIVE_PROFILE = "delia"; // single-profile mode (no PIN, no chooser)
+    const PROFILE_LABEL = "Delia";
 
-    // Put your videos here:
-    // youtubeId = the part after v= in your URL
-    // thumb = https://i.ytimg.com/vi/VIDEO_ID/hqdefault.jpg
     const BASE_CATEGORIES = [
       {
-        title: "Recently Added",
-        subtitle: "Newest edits",
+        title: "Date Nights",
+        subtitle: "Just us",
         videos: [
           {
-            title: "Date Night In Savannah",
+            title: "Date Night in Savannah",
             date: "March 14, 2025",
-            note: "This day with you was perfect — just us, amazing burgers, and all the little moments that made it unforgettable. I’m so lucky to have you. You make everything better just by being there. I’ll always cherish days like this with you..",
+            note: "This day with you was perfect — just us, amazing burgers, and all the little moments that made it unforgettable. I’m so lucky to have you. You make everything better just by being there. I’ll always cherish days like this with you.",
             youtubeId: "za1w1Nzjh7U",
             thumb: "https://i.ytimg.com/vi/za1w1Nzjh7U/hqdefault.jpg",
-            tags: ["HD", "Unlisted", "Love"]
-          },
-          {
-            title: "My Love in a Photograph",
-            date: "April 26, 2025",
-            note: "Every moment with you is as magical as the last. I'm so grateful for these memories with you. I love you..",
-            youtubeId: "O0uI-ilUwSI",
-            thumb: "https://i.ytimg.com/vi/VIDEO_ID_HERE_2/hqdefault.j",
-            tags: ["HD", "Unlisted"]
+            tags: ["HD","Unlisted","Love"]
           }
         ]
       },
       {
-        title: "For Delia.",
-        subtitle: "The big chapters",
+        title: "Love Letters",
+        subtitle: "On repeat",
         videos: [
           {
-            title: "For Delia.",
-            date: "2025",
-            note: "Before I even knew your name, I was already waiting for you. Somewhere deep inside, my heart knew you were coming. The most beautiful, caring, spontaneous, and loving soul. And when you finally appeared, it felt less like meeting someone new and more like finding a piece of myself I didn’t know was missing..",
+            title: "My Love in a Photograph",
+            date: "",
+            note: "Every moment with you feels just as magical as the last. I’m so grateful for these memories. I love you.",
+            youtubeId: "O0uI-ilUwSI",
+            thumb: "https://i.ytimg.com/vi/O0uI-ilUwSI/hqdefault.jpg",
+            tags: ["HD","Unlisted","Love"]
+          },
+          {
+            title: "For Delia",
+            date: "",
+            note: "Before I even knew your name, I was already waiting for you. Somewhere deep inside, my heart knew you were coming — the most beautiful, caring, spontaneous, and loving soul. And when you finally appeared, it felt less like meeting someone new and more like finding a piece of myself I didn’t know was missing.",
             youtubeId: "0BhIgYmfX0w",
-            thumb: "https://i.ytimg.com/vi/VIDEO_ID_HERE_3/hqdefault.jpg",
-            tags: ["HD", "Trip"]
+            thumb: "https://i.ytimg.com/vi/0BhIgYmfX0w/hqdefault.jpg",
+            tags: ["HD","Unlisted","Love"]
+          }
+        ]
+      },
+      {
+        title: "Fun",
+        subtitle: "The goofy moments",
+        videos: [
+          {
+            title: "Horsies",
+            date: "",
+            note: "Just us being us — horsies and laughter.",
+            youtubeId: "sQ-AEK6V7NE",
+            thumb: "https://i.ytimg.com/vi/sQ-AEK6V7NE/hqdefault.jpg",
+            tags: ["HD","Unlisted","Fun"]
+          }
+        ]
+      },
+      {
+        title: "Stories",
+        subtitle: "Short docs",
+        videos: [
+          {
+            title: "Chasing Redemption: Gridlife Circuit Legends",
+            date: "",
+            note: "After a rough start at Gridlife, Donald Lui battles setbacks, chaos, and doubt — fighting for redemption one lap at a time.",
+            youtubeId: "sI3IXV7f-cU",
+            thumb: "https://i.ytimg.com/vi/sI3IXV7f-cU/hqdefault.jpg",
+            tags: ["HD","Unlisted","Racing","Documentary"]
           }
         ]
       }
     ];
-          {
-            title: "Horsies",
-            date: "2025",
-            note: "You and Horses",
-            youtubeId: "sQ-AEK6V7NE",
-            thumb: "https://i.ytimg.com/vi/sQ-AEK6V7NE/hqdefault.jpg"
-            tags: ["HD", "Trip"]
-           }
-        ]
-      }
-    ];
-    {
-  title: "Chasing Redemption: Gridlife Circuit Legends",
-  date: ""
-  note: "After a rough start at Gridlife, Donald Lui battles setbacks, chaos, and doubt — fighting for redemption one lap at a time.",
-  youtubeId: "sI3IXV7f-cU",
-  thumb: "https://i.ytimg.com/vi/sI3IXV7f-cU/hqdefault.jpg",
-  tags: ["HD", "Unlisted", "Racing", "Documentary"]
-}
-
     // =======================
 
     // -----------------------
     // State
     // -----------------------
-    let activeProfile = localStorage.getItem("vault_profile") || "";
-    let soundOn = (localStorage.getItem("vault_sound") || "off") === "on";
+    let activeProfile = ACTIVE_PROFILE;
+    localStorage.setItem("vault_profile", activeProfile);
 
+    let soundOn = (localStorage.getItem("vault_sound") || "off") === "on";
     let ytPlayer = null;
     let currentVideo = null;
 
     let hoverPreviewTimer = null;
     let heroRotateTimer = null;
+    let currentHeroVideo = null;
 
     // -----------------------
     // Tiny sound design (UI only)
@@ -678,11 +574,9 @@
     // -----------------------
     // Helpers: keys per profile
     // -----------------------
-    function requireProfileKeyPrefix(){
-      return activeProfile ? `vault_${activeProfile}_` : "vault__";
-    }
-    function keyProgress(id){ return `${requireProfileKeyPrefix()}progress_${id}`; }
-    function keyFavs(){ return `${requireProfileKeyPrefix()}favorites`; }
+    function keyPrefix(){ return `vault_${activeProfile}_`; }
+    function keyProgress(id){ return `${keyPrefix()}progress_${id}`; }
+    function keyFavs(){ return `${keyPrefix()}favorites`; }
 
     function getFavoritesSet(){
       const raw = localStorage.getItem(keyFavs()) || "[]";
@@ -699,14 +593,11 @@
       if(s.has(id)) s.delete(id); else s.add(id);
       setFavoritesSet(s);
       renderAllFavIcons();
-      rebuildAndRender(); // keeps "My List" row updated
+      rebuildAndRender({ keepHero:true }); // keeps My List row updated
     }
 
-    // -----------------------
-    // Build dynamic categories: Continue Watching + My List + Base
-    // -----------------------
-    function buildFlat(baseCats){
-      return baseCats.flatMap(c => c.videos.map(v => ({...v, category:c.title})));
+    function buildFlat(cats){
+      return cats.flatMap(c => c.videos.map(v => ({...v, category:c.title})));
     }
 
     function getProgressPct(id){
@@ -723,7 +614,6 @@
     function getMyList(flat){
       const favs = getFavoritesSet();
       const list = flat.filter(v => favs.has(v.youtubeId));
-      // optional: sort by most progressed, then title
       return list
         .map(v => ({...v, _pct: getProgressPct(v.youtubeId)}))
         .sort((a,b) => (b._pct - a._pct) || a.title.localeCompare(b.title));
@@ -737,66 +627,11 @@
       const ml = getMyList(flat);
 
       const out = [];
-
-      if(cw.length){
-        out.push({ title:"Continue Watching", subtitle:"Pick up where you left off", videos:cw });
-      }
-      if(ml.length){
-        out.push({ title:"My List", subtitle:"Saved moments", videos:ml });
-      }
+      if(cw.length) out.push({ title:"Continue Watching", subtitle:"Pick up where you left off", videos:cw });
+      if(ml.length) out.push({ title:"My List", subtitle:"Saved moments", videos:ml });
       out.push(...base);
 
       return { categories: out, flatAll: buildFlat(out), flatBase: flat };
-    }
-
-    // -----------------------
-    // Gate / Profiles
-    // -----------------------
-    function renderProfiles(){
-      const wrap = document.getElementById("profiles");
-      wrap.innerHTML = "";
-      PROFILES.forEach(p => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "profileBtn";
-        btn.innerHTML = `
-          <div class="avatar" style="background:${p.color}">${p.tag}</div>
-          <div>
-            <div class="name">${p.name}</div>
-            <div class="sub">Profile</div>
-          </div>
-        `;
-        btn.addEventListener("click", () => {
-          uiClick();
-          activeProfile = p.id;
-          localStorage.setItem("vault_profile", activeProfile);
-          document.getElementById("gateStatus").textContent = `Selected: ${p.name}`;
-          document.getElementById("watchingAs").textContent = `Watching as: ${p.name}`;
-          document.getElementById("pin").focus();
-        });
-        wrap.appendChild(btn);
-      });
-    }
-
-    function updateHeaderProfile(){
-      const p = PROFILES.find(x => x.id === activeProfile);
-      document.getElementById("watchingAs").textContent = `Watching as: ${p ? p.name : "—"}`;
-    }
-
-    function enterGate(){
-      uiClick();
-      const pin = document.getElementById("pin").value;
-      const err = document.getElementById("gateErr");
-      if(activeProfile && pin === PIN_CODE){
-        document.getElementById("gate").style.display = "none";
-        err.style.display = "none";
-        rebuildAndRender();
-        startHeroRotation();
-      } else {
-        err.style.display = "block";
-        document.getElementById("pin").value = "";
-        document.getElementById("pin").focus();
-      }
     }
 
     // -----------------------
@@ -850,43 +685,25 @@
             <div class="tileLabel">${v.title}<small>${v.date || ""}</small></div>
           `;
 
-          // Clicks: tile opens info/play depending; buttons handle actions
           tile.addEventListener("click", (e) => {
             const act = e.target?.dataset?.action;
-            if(act === "play"){
-              uiClick();
-              openModal(v);
-              return;
-            }
+            if(act === "play"){ uiClick(); openModal(v); return; }
             if(act === "fav"){
               uiClick();
               toggleFav(v.youtubeId);
-              // update button icon immediately
               e.target.textContent = isFav(v.youtubeId) ? "💖" : "♡";
               return;
             }
-            if(act === "info"){
-              uiClick();
-              openInfo(v);
-              return;
-            }
-            // clicking elsewhere = play (Netflix-like)
-            uiClick();
-            openModal(v);
+            if(act === "info"){ uiClick(); openInfo(v); return; }
+            uiClick(); openModal(v);
           });
 
-          // Keyboard: Enter plays, i opens info, f toggles favorite
           tile.addEventListener("keydown", (e) => {
-            if(e.key === "Enter"){
-              uiClick(); openModal(v);
-            } else if(e.key.toLowerCase() === "i"){
-              uiClick(); openInfo(v);
-            } else if(e.key.toLowerCase() === "f"){
-              uiClick(); toggleFav(v.youtubeId);
-            }
+            if(e.key === "Enter"){ uiClick(); openModal(v); }
+            else if(e.key.toLowerCase() === "i"){ uiClick(); openInfo(v); }
+            else if(e.key.toLowerCase() === "f"){ uiClick(); toggleFav(v.youtubeId); }
           });
 
-          // Hover expand + preview
           tile.addEventListener("mouseenter", () => {
             uiWhoosh();
             tile.classList.add("is-hovered");
@@ -924,8 +741,7 @@
     }
 
     function renderAllProgressBars(){
-      const tiles = document.querySelectorAll(".tile[data-youtube-id]");
-      tiles.forEach(tile => {
+      document.querySelectorAll(".tile[data-youtube-id]").forEach(tile => {
         const id = tile.dataset.youtubeId;
         const pct = getProgressPct(id);
         const fill = tile.querySelector(".progressFill");
@@ -935,31 +751,28 @@
         if(pct <= 0){
           track.style.display = "none";
           fill.style.width = "0%";
-          return;
+        } else {
+          track.style.display = "block";
+          fill.style.width = `${pct}%`;
         }
-        track.style.display = "block";
-        fill.style.width = `${pct}%`;
       });
     }
 
     function renderAllFavIcons(){
-      const tiles = document.querySelectorAll(".tile[data-youtube-id]");
-      tiles.forEach(tile => {
+      document.querySelectorAll(".tile[data-youtube-id]").forEach(tile => {
         const id = tile.dataset.youtubeId;
         const btn = tile.querySelector('[data-action="fav"]');
         if(btn) btn.textContent = isFav(id) ? "💖" : "♡";
       });
-      // hero button
       if(currentHeroVideo){
-        document.getElementById("addFeatured").textContent = isFav(currentHeroVideo.youtubeId) ? "💖 In My List" : "❤️ My List";
+        document.getElementById("addFeatured").textContent =
+          isFav(currentHeroVideo.youtubeId) ? "💖 In My List" : "❤️ My List";
       }
     }
 
     // -----------------------
     // Hero
     // -----------------------
-    let currentHeroVideo = null;
-
     function heroSet(v){
       currentHeroVideo = v;
       document.getElementById("heroImg").src = v.thumb;
@@ -967,15 +780,14 @@
       document.getElementById("heroMeta").textContent =
         `${v.date || ""} • ${v.category || "Featured"} — ${v.note || "Some moments deserve to be watched again."}`;
 
-      // chips
       const chips = [];
       if(v.category) chips.push(v.category);
       if(v.tags && v.tags.length) chips.push(...v.tags.slice(0,3));
       if(!chips.length) chips.push("HD","Unlisted");
       document.getElementById("heroChips").innerHTML = chips.map(c => `<span class="chip">${c}</span>`).join("");
 
-      // button text
-      document.getElementById("addFeatured").textContent = isFav(v.youtubeId) ? "💖 In My List" : "❤️ My List";
+      document.getElementById("addFeatured").textContent =
+        isFav(v.youtubeId) ? "💖 In My List" : "❤️ My List";
     }
 
     function pickRandomHero(flat){
@@ -1009,11 +821,10 @@
     const modalActions = document.getElementById("modalActions");
 
     function openInfo(v){
-      // Info modal without autoplay
-      openModal(v, { autoplay:false, infoOnly:true });
+      openModal(v, { autoplay:false });
     }
 
-    function openModal(v, opts = { autoplay:true, infoOnly:false }){
+    function openModal(v, opts = { autoplay:true }){
       currentVideo = v;
 
       modalTitle.textContent = v.title;
@@ -1025,7 +836,7 @@
       ].join("");
 
       modalActions.innerHTML = `
-        <button class="iconBtn ${isFav(v.youtubeId) ? "" : ""}" type="button" id="modalFavBtn">
+        <button class="iconBtn" type="button" id="modalFavBtn">
           ${isFav(v.youtubeId) ? "💖 Saved" : "♡ Save to My List"}
         </button>
       `;
@@ -1040,14 +851,12 @@
 
       playerEl.innerHTML = `<div id="ytPlayer"></div>`;
 
-      // If API not ready yet, fallback to embed iframe (still works, but no progress tracking)
       if(typeof YT === "undefined" || !YT.Player){
         const src = `https://www.youtube.com/embed/${v.youtubeId}?rel=0&modestbranding=1&playsinline=1${opts.autoplay ? "&autoplay=1" : ""}`;
         playerEl.innerHTML = `<iframe style="width:100%;height:100%;border:0" src="${src}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
         return;
       }
 
-      // Create player
       ytPlayer = new YT.Player("ytPlayer", {
         videoId: v.youtubeId,
         playerVars: {
@@ -1087,8 +896,6 @@
       currentVideo = null;
 
       playerEl.innerHTML = "";
-
-      // keep rows (Continue Watching) accurate after saving
       rebuildAndRender({ keepHero:true });
     }
 
@@ -1100,8 +907,7 @@
     // Keyboard navigation (arrows across rails)
     // -----------------------
     function installArrowKeyNav(){
-      const tiles = document.querySelectorAll(".tile");
-      tiles.forEach(t => {
+      document.querySelectorAll(".tile").forEach(t => {
         t.addEventListener("keydown", (e) => {
           const key = e.key;
           if(!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(key)) return;
@@ -1116,7 +922,6 @@
           if(key === "ArrowLeft") next = getTile(row, Math.max(0, col-1));
           if(key === "ArrowRight") next = getTile(row, col+1) || t;
           if(key === "ArrowUp"){
-            // move up same col, or closest smaller col
             for(let rr = row-1; rr >= 0; rr--){
               next = getTile(rr, col) || getTile(rr, Math.max(0, col-1)) || getTile(rr, 0);
               if(next) break;
@@ -1126,14 +931,12 @@
             for(let rr = row+1; ; rr++){
               next = getTile(rr, col) || getTile(rr, Math.max(0, col-1)) || getTile(rr, 0);
               if(next) break;
-              // stop if no more rows
               if(!document.querySelector(`.rail[data-row-index="${rr}"]`)) { next = t; break; }
             }
           }
 
           if(next){
             next.focus({ preventScroll:false });
-            // scroll rail so focused tile is visible
             const rail = next.closest(".rail");
             if(rail){
               const rect = next.getBoundingClientRect();
@@ -1156,18 +959,16 @@
 
       renderRows(categories);
 
-      // set hero
       if(!keepHero || !currentHeroVideo){
         const picked = pickRandomHero(flatAll);
         if(picked) heroSet(picked);
       } else {
-        // refresh hero button state
         renderAllFavIcons();
       }
     }
 
     // -----------------------
-    // Header buttons / hero buttons
+    // Header / hero buttons
     // -----------------------
     document.getElementById("playFeatured").addEventListener("click", (e) => {
       e.stopPropagation();
@@ -1195,16 +996,12 @@
       openModal(currentHeroVideo);
     });
     document.getElementById("heroCard").addEventListener("keydown", (e) => {
-      if(e.key === "Enter" && currentHeroVideo){
-        uiClick(); openModal(currentHeroVideo);
-      }
+      if(e.key === "Enter" && currentHeroVideo){ uiClick(); openModal(currentHeroVideo); }
     });
 
     // Sound toggle
     const soundBtn = document.getElementById("soundBtn");
-    function renderSoundBtn(){
-      soundBtn.textContent = `Sound: ${soundOn ? "On" : "Off"}`;
-    }
+    function renderSoundBtn(){ soundBtn.textContent = `Sound: ${soundOn ? "On" : "Off"}`; }
     soundBtn.addEventListener("click", () => {
       soundOn = !soundOn;
       localStorage.setItem("vault_sound", soundOn ? "on" : "off");
@@ -1212,105 +1009,17 @@
       uiClick();
     });
 
-    // Gate events
-    document.getElementById("enterBtn").addEventListener("click", enterGate);
-    document.getElementById("pin").addEventListener("keydown", (e)=>{ if(e.key==="Enter") enterGate(); });
-
-    // YouTube API ready hook (required by iframe_api)
-    function onYouTubeIframeAPIReady(){
-      // no-op: we create players when needed
-    }
+    // YouTube API ready hook
+    function onYouTubeIframeAPIReady(){ /* no-op */ }
     window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
 
     // -----------------------
-    // Boot
+    // Boot (NO PIN)
     // -----------------------
-    renderProfiles();
-    updateHeaderProfile();
+    document.getElementById("watchingAs").textContent = `Watching as: ${PROFILE_LABEL}`;
     renderSoundBtn();
-
-    // If profile already chosen previously, reflect in gate UI
-    if(activeProfile){
-      const p = PROFILES.find(x => x.id === activeProfile);
-      document.getElementById("gateStatus").textContent = `Selected: ${p ? p.name : activeProfile}`;
-      updateHeaderProfile();
-    }
-
-    // keep focus pleasant
-    document.getElementById("pin").focus();
-// ====== EMERGENCY GATE FIX (paste at bottom of script) ======
-(function () {
-  const gate = document.getElementById("gate");
-  const pin = document.getElementById("pin");
-  const enterBtn = document.getElementById("enterBtn");
-  const gateErr = document.getElementById("gateErr");
-  const gateStatus = document.getElementById("gateStatus");
-
-  if (!gate || !pin || !enterBtn) {
-    alert("Gate elements not found. Make sure your HTML IDs are unchanged: gate, pin, enterBtn.");
-    return;
-  }
-
-  function hardUnlock() {
-    gate.style.display = "none";
-    gate.style.visibility = "hidden";
-    gate.style.pointerEvents = "none";
-    document.body.style.overflow = "auto";
-  }
-
-  function getSelectedProfile() {
-    // activeProfile is defined in the main script; if not, fallback to localStorage
-    try {
-      return (window.activeProfile && String(window.activeProfile)) || localStorage.getItem("vault_profile") || "";
-    } catch {
-      return localStorage.getItem("vault_profile") || "";
-    }
-  }
-
-  function tryEnter() {
-    const selected = getSelectedProfile();
-    const typed = String(pin.value || "").trim();
-    const expected = String(window.PIN_CODE || "1119");
-
-    // Debug info (you can remove later)
-    console.log("[Gate Debug]", { selectedProfile: selected, typed, expected });
-
-    if (!selected) {
-      gateErr.style.display = "block";
-      gateErr.textContent = "Pick a profile first.";
-      return;
-    }
-
-    if (typed !== expected) {
-      gateErr.style.display = "block";
-      gateErr.textContent = "Wrong code. Try again.";
-      pin.value = "";
-      pin.focus();
-      return;
-    }
-
-    gateErr.style.display = "none";
-    hardUnlock();
-
-    // Call your normal render functions if they exist
-    try { window.rebuildAndRender?.(); } catch {}
-    try { window.startHeroRotation?.(); } catch {}
-
-    if (gateStatus) gateStatus.textContent = "Unlocked ✅";
-  }
-
-  enterBtn.addEventListener("click", tryEnter);
-  pin.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") tryEnter();
-  });
-
-  // Make sure profile buttons truly click
-  document.querySelectorAll(".profileBtn").forEach((btn) => {
-    btn.style.pointerEvents = "auto";
-    btn.style.zIndex = "999";
-  });
-
-})();
+    rebuildAndRender();
+    startHeroRotation();
   </script>
 </body>
 </html>
